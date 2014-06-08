@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+ <head> 
+  <title>Homework 4</title> 
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #stats {  /* Align stats top-left */
+      position: absolute;
+      left: 0px;
+      top: 0px;
+    }
+  </style> 
+  </head> 
+  <body>
+    <!-- JavaScript libraries -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r67/three.min.js"></script> 
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/stats.js/r11/Stats.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+    <script src="assets/libs/TrackballControls.js"></script>
+    <script type="text/javascript" src="assets/fonts/helvetiker_regular.typeface.js"></script> 
+    <script type="text/javascript" src="assets/fonts/helvetiker_bold.typeface.js"></script> 
+    <script src="assets/libs/tween.min.js"></script>
+    <script>
+
+      // once everything is loaded, we run our Three.js stuff.
+      $(function () {
+        var stats = initStats();
+       
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer();
+        var trackballControls = new THREE.TrackballControls(camera);
+
+        renderer.setClearColor(new THREE.Color(0xa5bcdd,1.0));
+        renderer.setSize(window.innerWidth,window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+        // position and point the camera to the center of the scene
+        camera.position.set(0, -140, 0);
+        camera.up = new THREE.Vector3(0,0,1);
+        camera.lookAt(scene.position);
+        
+        var axisHelper = new THREE.AxisHelper(20);
+        scene.add(axisHelper);
+
+        // create the ground plane
+        var planeGeometry = new THREE.PlaneGeometry(700,700,50,50);
+        var planeMaterial =  new THREE.MeshBasicMaterial({color: 0xa5bcdd});
+        var plane = new THREE.Mesh(planeGeometry,planeMaterial);
+
+        // rotate and position the plane
+        plane.position.z = -15;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        var root = new THREE.Object3D();
+
+        // BASE
+        var baseHeight = 1.5;
+        var baseRadius = 7;
+        var baseGeometry = new THREE.CylinderGeometry(baseRadius, baseRadius, baseHeight, 40, 40, false);
+        var baseMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa, metal: true});
+        var base = new THREE.Mesh(baseGeometry, baseMaterial);
+        base.position.set(0, 0, 0);
+        base.castShadow = true;
+        root.add(base);
+
+        // JOINT
+        function mkJoint (radius, height) {
+          var joint = new THREE.Object3D();
+          var sphereGeometry = new THREE.SphereGeometry(radius, 20, 20);
+          var sphereMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa, metal: true});
+          var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+          sphere.position.set(0, 0, 0);
+          sphere.castShadow = true;
+          joint.add(sphere);
+
+          var cylinderGeometry = new THREE.CylinderGeometry(radius, radius, height, 20, 20, false);
+          var cylinderMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa, metal: true});
+          var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+          cylinder.position.set(0, height / 2 + radius, 0);
+          cylinder.castShadow = true;
+          sphere.add(cylinder);
+
+          var hook = new THREE.Object3D();
+          hook.position.set(0, height/2+radius, 0);
+          cylinder.add(hook);
+
+          joint.sphere = sphere;
+          joint.cylinder = cylinder;
+          joint.hook = hook;
+
+          return joint;
+        }
+
+        var height = 13;
+        var radius = 1;
+        var joint1 = mkJoint(radius, height);
+        joint1.position.set(0, radius + baseHeight/2, 0);
+        base.add(joint1);
+
+        var joint2 = mkJoint(radius, 0.75 * height);
+        joint1.hook.add(joint2);
+
+        //LAMP
+        var lampRoot = new THREE.Object3D();
+
+        var sphereGeometry = new THREE.SphereGeometry(radius, 20, 20);
+        var sphereMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa, metal: true});
+        var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(0, 0, 0);
+        sphere.castShadow = true;
+        lampRoot.add(sphere);
+
+        var lampRadius = radius * 8;
+
+        var semiSphereGeometry = new THREE.SphereGeometry(lampRadius, 20, 20, 0, -2*Math.PI, Math.PI, Math.PI/2);
+        var semiSphereMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa, side: THREE.DoubleSide, metal: true });
+        var semiSphere = new THREE.Mesh(semiSphereGeometry, semiSphereMaterial);
+        semiSphere.position.set(0, lampRadius + radius, 0);
+        semiSphere.castShadow = true;
+        sphere.add(semiSphere);
+
+        var lampGeometry = new THREE.SphereGeometry(4, 20, 20);
+        var lampMaterial = new THREE.MeshPhongMaterial({color: 0xffff00, transparent:true, opacity:0.5});
+        var lamp = new THREE.Mesh(lampGeometry, lampMaterial);
+        lamp.position.set(0, -lampRadius+4, 0);
+        semiSphere.add(lamp);
+
+        //SPOTLIGHT
+        var lampSpotLight = new THREE.SpotLight(0xffffff);
+        lampSpotLight.angle = Math.PI/4.1;
+        lampSpotLight.intensity = 3;
+        lampSpotLight.target = lamp;
+        lampSpotLight.castShadow = true;
+        lampSpotLight.shadowCameraNear = 10;
+        lampSpotLight.shadowCameraFar = 500;
+        lampSpotLight.shadowCameraFov = 70;
+        lampSpotLight.shadowDarkness = 0.5;
+        lampSpotLight.shadowMapWidth = 1024;
+        lampSpotLight.shadowMapHeight = 1024;
+        lampSpotLight.position = lamp.position;
+        lamp.add(lampSpotLight);
+
+        lampSpotLight.position = lamp.position;
+        lamp.add(lampSpotLight);
+
+        var lampSpotLightHelper = new THREE.SpotLightHelper(lampSpotLight);
+        //lampSpotLight.add(lampSpotLightHelper);
+
+        joint2.hook.add(lampRoot);
+
+        // ROTAZIONE LAMPADA
+        root.rotation.x = Math.PI/2;
+
+        //PIXAR
+        function createMesh(geom) {
+          var meshMaterial = new THREE.MeshPhongMaterial({color: 0x000000});
+          var plane = THREE.SceneUtils.createMultiMaterialObject(geom, [meshMaterial]);
+          return plane;
+        }
+
+        var options = {
+          size: 30,
+          height: 0.001,
+          font: "helvetiker",
+          weight: "normal",
+          bevelThickness: 2,
+          bevelSize: 0,
+          bevelSegments: 12,
+          bevelEnabled: true,
+          curveSegments: 3,
+          steps: 1
+        };
+
+        var pixarGeometry = new THREE.TextGeometry("P    X A R", options);
+        var pixarMaterial = new THREE.MeshPhongMaterial({color: 0x000000});
+        var pixar = new THREE.Mesh(pixarGeometry, pixarMaterial);
+        pixar.castShadow = true;
+        pixar.rotation.x = Math.PI/2;
+        pixar.position.x = -30;
+        scene.add(pixar);
+
+        var pixarRoot = new THREE.Object3D();
+        pixarRoot.add(root);
+        pixarRoot.add(pixar);
+        pixarRoot.position.x = -50;
+        pixarRoot.position.z = -15;
+        root.position.z = 200;
+
+        scene.add(pixarRoot);
+
+        // Scene Spotlight
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.intensity = 4;
+        spotLight.target = plane;
+        spotLight.distance = 200;
+        spotLight.angle = Math.PI/4;
+        spotLight.exponent = 10;
+        spotLight.castShadow = true;
+        spotLight.shadowCameraNear = 10;
+        spotLight.shadowCameraFar = 500;
+        spotLight.shadowCameraFov = 70;
+        spotLight.shadowDarkness = 0.5;
+        spotLight.shadowMapWidth = 1024;
+        spotLight.shadowMapHeight = 1024;
+        //spotLight.shadowCameraVisible = true;
+        spotLight.position.set(0,-100,100);
+        //var lampSpotLightHelper2 = new THREE.SpotLightHelper(spotLight);
+        //spotLight.add(lampSpotLightHelper2);
+        scene.add(spotLight);
+
+        // add the output of the renderer to the html element
+        $('body').append(renderer.domElement);
+
+        //LAMP ANIMATION
+        var lampTween1 = new TWEEN.Tween(lampRoot.rotation)
+          .to({ x: 0.4 }, 7500)
+          .easing(TWEEN.Easing.Linear.None)
+          //.easing(TWEEN.Easing.Bounce.Out)  
+          .start();
+
+        var lampTween2 = new TWEEN.Tween(joint2.sphere.rotation)
+          .to({ y: 5 }, 7500)
+          .easing(TWEEN.Easing.Linear.None)
+          //.easing(TWEEN.Easing.Bounce.Out)  
+          .start();
+
+        var lampTween3 = new TWEEN.Tween(joint2.rotation)
+          .to({ x: 1 }, 7500)
+          .easing(TWEEN.Easing.Linear.None)
+          //.easing(TWEEN.Easing.Bounce.Out)  
+          .start();
+
+        var lampTween4 = new TWEEN.Tween(joint1.sphere.rotation)
+          .to({ x: 0.2 }, 7000)
+          .easing(TWEEN.Easing.Linear.None)
+          //.easing(TWEEN.Easing.Bounce.Out)  
+          .start();
+
+        var lampTween5 = new TWEEN.Tween(joint1.rotation)
+          .to({ y: 1 }, 7000)
+          .easing(TWEEN.Easing.Linear.None)
+          //.easing(TWEEN.Easing.Bounce.Out)  
+          .start();
+
+        var lampTween6 = new TWEEN.Tween(root.position)
+          .to({ x: root.position.x, y: root.position.y , z: 0 }, 2000)
+          //.easing(TWEEN.Easing.Linear.None)
+          .easing(TWEEN.Easing.Bounce.Out) 
+          .delay(1000)
+          .start(); 
+
+        //CONTROLS
+
+        var controls = new function () {
+          this.alpha = 0.0;
+          this.beta = 0.0;
+          this.gamma = 0.0;
+          this.delta = 0.0;
+          this.epsilon = 0.0;
+          this.posX = 0.0;
+          this.posY = 0.0;
+          this.lightSwitch = true;
+        }
+
+        var gui = new dat.GUI();
+        gui.add(controls, 'alpha', 0.0, 2*Math.PI).onChange(function (value) {
+          joint1.rotation.y = value; 
+        });
+        gui.add(controls, 'beta', 0.0, Math.PI/2).onChange(function (value) {
+          joint1.sphere.rotation.x = value; 
+        });
+        gui.add(controls, 'gamma', 0.0, Math.PI/2).onChange(function (value) {
+          joint2.rotation.x = value; 
+        });
+        gui.add(controls, 'delta', 0.0, 2*Math.PI).onChange(function (value) {
+          joint2.sphere.rotation.y = value; 
+        });
+        gui.add(controls, 'epsilon', 0.0, Math.PI/2).onChange(function (value) {
+          lampRoot.rotation.x = value; 
+        });
+        gui.add(controls, 'posX', 0, 50).onChange(function (value) {
+          root.position.x = value; 
+        });
+        gui.add(controls, 'posY', 0, 50).onChange(function (value) {
+          root.position.y = value; 
+        });
+
+        var lightSwitch = gui.add(controls, 'lightSwitch');
+
+        lightSwitch.onChange(function (value) {
+          lightSwitch.visible = value;
+          if(!value) {
+            lampSpotLight.intensity = 0;
+            lampSpotLight.shadowDarkness = 0;
+          }
+          else {
+            lampSpotLight.intensity = 2;
+            lampSpotLight.shadowDarkness = 0.5;
+          }
+        });
+
+        render();
+
+        function render() {
+          stats.update();
+          trackballControls.update();
+          TWEEN.update();
+    
+          // render using requestAnimationFrame
+          requestAnimationFrame(render);
+          renderer.render(scene, camera);
+        }
+
+        function initStats() {
+          var stats = new Stats();
+          stats.setMode(0); // 0: fps, 1: ms
+          $('body').append(stats.domElement);
+          return stats;
+        }
+
+      });
+    </script>
+ </body>
+</html>
