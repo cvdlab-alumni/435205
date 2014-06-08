@@ -131,6 +131,7 @@
         var lamp = new THREE.Mesh(lampGeometry, lampMaterial);
         lamp.position.set(0, -lampRadius+4, 0);
         semiSphere.add(lamp);
+        lampRoot.sphere = sphere;
 
         //SPOTLIGHT
         var lampSpotLight = new THREE.SpotLight(0xffffff);
@@ -277,13 +278,13 @@
           joint1.sphere.rotation.x = value; 
         });
         gui.add(controls, 'gamma', 0.0, Math.PI/2).onChange(function (value) {
-          joint2.rotation.x = value; 
+          joint2.sphere.rotation.x = value; 
         });
         gui.add(controls, 'delta', 0.0, 2*Math.PI).onChange(function (value) {
-          joint2.sphere.rotation.y = value; 
+          joint2.rotation.y = value; 
         });
         gui.add(controls, 'epsilon', 0.0, Math.PI/2).onChange(function (value) {
-          lampRoot.rotation.x = value; 
+          lampRoot.sphere.rotation.x = value; 
         });
         gui.add(controls, 'posX', 0, 50).onChange(function (value) {
           root.position.x = value; 
