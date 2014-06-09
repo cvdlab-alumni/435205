@@ -50,7 +50,7 @@
 
         // create the ground plane
         var planeGeometry = new THREE.PlaneGeometry(700,700,50,50);
-        var planeMaterial =  new THREE.MeshBasicMaterial({color: 0xa5bcdd});
+        var planeMaterial =  new THREE.MeshPhongMaterial({color: 0xa5bcdd});
         var plane = new THREE.Mesh(planeGeometry,planeMaterial);
 
         // rotate and position the plane
@@ -198,10 +198,10 @@
 
         // Scene Spotlight
         var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.intensity = 4;
+        spotLight.intensity = 2;
         spotLight.target = plane;
-        spotLight.distance = 200;
-        spotLight.angle = Math.PI/4;
+        spotLight.distance = 400;
+        spotLight.angle = Math.PI;
         spotLight.exponent = 10;
         spotLight.castShadow = true;
         spotLight.shadowCameraNear = 10;
