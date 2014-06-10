@@ -24,9 +24,9 @@ hpc = SKEL_1(STRUCT(MKPOLS(master)))
 hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
 #VIEW(hpc)
  
-master = diagram2cell(diagram1,master,0)
-master = diagram2cell(diagram2,master,1)
-master = diagram2cell(diagram3,master,2)
+master = diagram2cell(diagram1,master,1)
+master = diagram2cell(diagram2,master,2)
+master = diagram2cell(diagram3,master,3)
 master = diagram2cell(diagram4,master,47)
 master = diagram2cell(diagram5,master,50)
 
