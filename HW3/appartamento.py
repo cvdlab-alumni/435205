@@ -13,12 +13,15 @@ from boolean import *
 from sysml import *
 DRAW = COMP([VIEW,STRUCT,MKPOLS])
 
+#MURI
+
 master = assemblyDiagramInit([3,1,2])([[4,9,13],[20],[.1,4]])
 diagram1 = assemblyDiagramInit([3,3,1])([[1,2,1],[1,18,1],[1]])
-diagram2 = assemblyDiagramInit([5,7,1])([[1,4,1,2,1],[1,6,1,7,1,3,1],[1]])
+diagram2 = assemblyDiagramInit([4,7,1])([[5,1,2,1],[1,6,1,7,1,3,1],[1]])
 diagram3 = assemblyDiagramInit([1,3,1])([[12],[15,1,4],[1]])
 diagram4 = assemblyDiagramInit([4,2,1])([[9,1,2,1],[1,14],[1]])
-diagram5 = assemblyDiagramInit([1,3,2])([[9],[6,1,7],[.1,4]])
+diagram5 = assemblyDiagramInit([1,3,1])([[9],[6,1,7],[1]])
+diagram6 = assemblyDiagramInit([3,1,1])([[2,1,6],[1],[1]])
 
 hpc = SKEL_1(STRUCT(MKPOLS(master)))
 hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
@@ -27,8 +30,33 @@ hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
 master = diagram2cell(diagram1,master,1)
 master = diagram2cell(diagram2,master,2)
 master = diagram2cell(diagram3,master,3)
-master = diagram2cell(diagram4,master,47)
-master = diagram2cell(diagram5,master,50)
+master = diagram2cell(diagram4,master,40)
+master = diagram2cell(diagram5,master,43)
+master = diagram2cell(diagram6,master,49)
+
+#PORTE E FINESTRE
+diagram7 = assemblyDiagramInit([1,5,2])([[1],[2,2,6,2,2],[3,1]])
+diagram8 = assemblyDiagramInit([3,1,2])([[4,1,4],[1],[3,1]])
+diagram9 = assemblyDiagramInit([1,3,2])([[1],[4,1,1],[3,1]])
+diagram10 = assemblyDiagramInit([3,1,2])([[0.5,1,0.5],[1],[3,1]])
+diagram11 = assemblyDiagramInit([3,1,2])([[2,1,2],[1],[3,1]])
+diagram12 = assemblyDiagramInit([1,5,2])([[1],[10,1,4.5,2,0.5],[3,1]])
+diagram13 = assemblyDiagramInit([1,3,2])([[1],[0.5,1,1.5],[3,1]])
+diagram14 = assemblyDiagramInit([3,1,2])([[0.5,1,0.5],[1],[3,1]])
+diagram15 = assemblyDiagramInit([1,3,2])([[1],[5,1,1],[3,1]])
+diagram16 = assemblyDiagramInit([3,1,2])([[1,1.5,10.5],[1],[3,1]])
+
+master = diagram2cell(diagram7,master,44)
+master = diagram2cell(diagram8,master,48)
+master = diagram2cell(diagram9,master,50)
+master = diagram2cell(diagram10,master,28)
+master = diagram2cell(diagram11,master,14)
+master = diagram2cell(diagram12,master,10)
+master = diagram2cell(diagram13,master,22)
+master = diagram2cell(diagram14,master,26)
+master = diagram2cell(diagram15,master,20)
+master = diagram2cell(diagram15,master,30)
+master = diagram2cell(diagram16,master,33)
 
 hpc = SKEL_1(STRUCT(MKPOLS(master)))
 hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
