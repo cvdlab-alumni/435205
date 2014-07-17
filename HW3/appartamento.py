@@ -15,16 +15,17 @@ DRAW = COMP([VIEW,STRUCT,MKPOLS])
 
 #MURI
 
-master = assemblyDiagramInit([3,1,2])([[4,9,13],[20],[.1,4]])
-diagram1 = assemblyDiagramInit([3,3,1])([[1,2,1],[1,18,1],[1]])
-diagram2 = assemblyDiagramInit([4,7,1])([[5,1,2,1],[1,6,1,7,1,3,1],[1]])
+master = assemblyDiagramInit([3,1,2])([[4,9,13],[25],[.1,4]])
+diagram1 = assemblyDiagramInit([3,3,1])([[1,2.5,0.5],[1,23,1],[1]])
+diagram2 = assemblyDiagramInit([4,7,1])([[5.5,0.5,2.5,0.5],[1,6,0.6,7.5,0.5,8.5,1],[1]])
 diagram3 = assemblyDiagramInit([1,3,1])([[12],[15,1,4],[1]])
-diagram4 = assemblyDiagramInit([4,2,1])([[9,1,2,1],[1,14],[1]])
-diagram5 = assemblyDiagramInit([1,3,1])([[9],[6,1,7],[1]])
-diagram6 = assemblyDiagramInit([3,1,1])([[2,1,6],[1],[1]])
+diagram4 = assemblyDiagramInit([4,2,1])([[9.5,0.5,2,1],[1,14],[1]])
+diagram5 = assemblyDiagramInit([1,3,1])([[9],[6,0.5,7.5],[1]])
+diagram6 = assemblyDiagramInit([3,1,1])([[2.5,0.5,6],[1],[1]])
 
 hpc = SKEL_1(STRUCT(MKPOLS(master)))
 hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
+
 #VIEW(hpc)
  
 master = diagram2cell(diagram1,master,1)
@@ -40,8 +41,8 @@ diagram8 = assemblyDiagramInit([3,1,2])([[4,1,4],[1],[3,1]])
 diagram9 = assemblyDiagramInit([1,3,2])([[1],[4,1,1],[3,1]])
 diagram10 = assemblyDiagramInit([3,1,2])([[0.5,1,0.5],[1],[3,1]])
 diagram11 = assemblyDiagramInit([3,1,2])([[2,1,2],[1],[3,1]])
-diagram12 = assemblyDiagramInit([1,5,2])([[1],[10,1,4.5,2,0.5],[3,1]])
-diagram13 = assemblyDiagramInit([1,3,2])([[1],[0.5,1,1.5],[3,1]])
+diagram12 = assemblyDiagramInit([1,5,2])([[1],[10,1,6,2,4],[3,1]])
+diagram13 = assemblyDiagramInit([1,3,2])([[1],[0.5,1,6.5],[3,1]])
 diagram14 = assemblyDiagramInit([3,1,2])([[0.5,1,0.5],[1],[3,1]])
 diagram15 = assemblyDiagramInit([1,3,2])([[1],[5,1,1],[3,1]])
 diagram16 = assemblyDiagramInit([3,1,2])([[1,1.5,10.5],[1],[3,1]])
@@ -58,13 +59,22 @@ master = diagram2cell(diagram15,master,20)
 master = diagram2cell(diagram15,master,30)
 master = diagram2cell(diagram16,master,33)
 
+#RIFINITURE
+
+diagram16 = assemblyDiagramInit([1,2,1])([[1],[20,5],[1]])
+
+master = diagram2cell(diagram16,master,2)
+
+
 hpc = SKEL_1(STRUCT(MKPOLS(master)))
 hpc = cellNumbering (master,hpc)(range(len(master[1])),CYAN,2)
 VIEW(hpc)
 
-emptyChain = [17,13,32,36,52,58,65]
+emptyList = [7,12,13,15,18,23,24,25,33,37,40,41,42,45,49,55,61,67,79,83,89,95,101,107,113]
+
+emptyChain = [6,11,12,14,17,22,23,24,32,36,39,40,41,44,48,54,60,66,78,82,88,94,100,106,112,117] 
 solidCV = [cell for k,cell in enumerate(master[1]) if not (k in emptyChain)]
-#DRAW((master[0],solidCV))
+DRAW((master[0],solidCV))
 
 exteriorCV =  [cell for k,cell in enumerate(master[1]) if k in emptyChain]
 exteriorCV += exteriorCells(master)
@@ -85,3 +95,5 @@ B_Rep = V,boundaryFaces
 #VIEW(EXPLODE(1.1,1.1,1.1)(MKPOLS((verts, triangles))))
 #VIEW(STRUCT(MKPOLS((verts, triangles))))
 
+v,CV = master
+#VIEW(EXPLODE(1.3,1.3,1.3)(MKPOLS((V,CV))))
