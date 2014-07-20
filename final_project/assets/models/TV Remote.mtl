@@ -1,0 +1,83 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl boutongris
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.4
+illum 2
+#
+newmtl boutonbleufonce
+Ka  0.2 0.3 0.3
+Kd  0.2 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.0
+illum 2
+#
+newmtl boutonrouge
+Ka  0.6 0.2 0.3
+Kd  0.6 0.2 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.4
+illum 2
+#
+newmtl boutonvert
+Ka  0.2 0.5 0.4
+Kd  0.2 0.5 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.0
+illum 2
+#
+newmtl boutonjaune
+Ka  0.9 0.7 0.0
+Kd  0.9 0.7 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.0
+illum 2
+#
+newmtl boutonbleu
+Ka  0.5 0.5 0.7
+Kd  0.5 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  2.8
+illum 2
+#
+newmtl Material__11
+Ka  0.0 0.0 0.0
+Kd  0.0 0.0 0.0
+Ks  0.0 0.0 0.0
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl Material__12
+Ka  0.0 0.0 0.0
+Kd  0.0 0.0 0.0
+Ks  0.0 0.0 0.0
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl Material__13
+Ka  0.0 0.0 0.0
+Kd  0.0 0.0 0.0
+Ks  0.0 0.0 0.0
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl Material__14
+Ka  0.0 0.0 0.0
+Kd  0.0 0.0 0.0
+Ks  0.0 0.0 0.0
+d  1.0
+Ns  0.0
+illum 2
+#
+# EOF

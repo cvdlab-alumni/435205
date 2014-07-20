@@ -2,7 +2,7 @@
 from pyplasm import *
 from scipy import *
 import os,sys
-sys.path.insert(0, '../HW3/lib/py/')
+sys.path.insert(0, '../2014-05-16/lib/py/')
 from lar2psm import *
 from simplexn import *
 from larcc import *
