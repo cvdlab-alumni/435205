@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """Module for facet extraction, extrusion and simplicial grids"""
 from pyplasm import *
-from scipy import *
-import sys; sys.path.insert(0, 'lib/py/')
 from lar2psm import *
+from scipy import *
 
 VOID = V0,CV0 = [[]],[[0]]    # the empty simplicial model
 
@@ -16,7 +15,7 @@ def cumsum(iterable):
         s = s + c
         yield s
 
-def larExtrude1(model,pattern):
+def larExtrude(model,pattern):
     V, FV = model
     d, m = len(FV[0]), len(pattern)
     coords = list(cumsum([0]+(AA(ABS)(pattern))))
@@ -32,10 +31,10 @@ def larExtrude1(model,pattern):
     outModel = outVertices, CAT(cellGroups)
     return outModel
 
-def larSimplexGrid1(shape):
+def larSimplexGrid(shape):
     model = VOID
     for item in shape:
-        model = larExtrude1(model,item*[1])
+        model = larExtrude(model,item*[1])
     return model
 
 def larSimplexFacets(simplices):
@@ -47,61 +46,34 @@ def larSimplexFacets(simplices):
     return [facet for k,facet in enumerate(out[:-1]) if out[k] != out[k+1]] \
       + [out[-1]] 
 
-def quads2tria(model):
-   V,FV = model
-   out = []
-   nverts = len(V)-1
-   for face in FV:
-      centroid = CCOMB([V[v] for v in face])
-      V += [centroid] 
-      nverts += 1
-      
-      v1, v2 = DIFF([V[face[0]],centroid]), DIFF([V[face[1]],centroid])
-      v3 = VECTPROD([v1,v2])
-      if ABS(VECTNORM(v3)) < 10**3:
-         v1, v2 = DIFF([V[face[0]],centroid]), DIFF([V[face[2]],centroid])
-         v3 = VECTPROD([v1,v2])
-      transf = mat(INV([v1,v2,v3]))
-      verts = [(V[v]*transf).tolist()[0][:-1]  for v in face]
-
-      tcentroid = CCOMB(verts)
-      tverts = [DIFF([v,tcentroid]) for v in verts]   
-      rverts = sorted([[ATAN2(vert),v] for vert,v in zip(tverts,face)])
-      ord = [pair[1] for pair in rverts]
-      ord = ord + [ord[0]]
-      edges = [[n,ord[k+1]] for k,n in enumerate(ord[:-1])]
-      triangles = [[nverts] + edge for edge in edges]
-      out += triangles
-   return V,out
-
 if __name__ == "__main__":
    # example 1
    V = [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]]
    FV = [[0,1,3],[1,2,4],[2,4,5],[3,4,6],[4,6,7],[5,7,8]]
-   model = larExtrude1((V,FV),4*[1,2,-3])
+   model = larExtrude((V,FV),4*[1,2,-3])
    VIEW(EXPLODE(1,1,1.2)(MKPOLS(model)))
    
    # example 2
-   model = larExtrude1( VOID, 6*[1] )
+   model = larExtrude( VOID, 6*[1] )
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(model)))
-   model = larExtrude1( model, 6*[1] )
+   model = larExtrude( model, 6*[1] )
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(model)))
-   model = larExtrude1( model, 6*[1] )
+   model = larExtrude( model, 6*[1] )
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(model)))
    
    # example 3
-   model = larExtrude1( VOID, 10*[1,-1] )
+   model = larExtrude( VOID, 10*[1,-1] )
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(model)))
-   model = larExtrude1( model, 10*[1] )
+   model = larExtrude( model, 10*[1] )
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(model)))
    
-   grid_2d = larSimplexGrid1([3,3])
+   grid_2d = larSimplexGrid([3,3])
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(grid_2d)))
    
-   grid_3d = larSimplexGrid1([2,3,4])
+   grid_3d = larSimplexGrid([2,3,4])
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(grid_3d)))
    
-   V,CV = larSimplexGrid1([1,1,1])
+   V,CV = larSimplexGrid([1,1,1])
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS((V,CV))))
    SK2 = (V,larSimplexFacets(CV))
    VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(SK2)))

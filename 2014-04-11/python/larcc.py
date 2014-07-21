@@ -29,7 +29,7 @@ from pyplasm import *
 import collections
 import scipy
 import numpy as np
-from scipy import zeros,arange,mat,amin,amax,array
+from scipy import zeros,arange,mat,amin,amax
 from scipy.sparse import vstack,hstack,csr_matrix,coo_matrix,lil_matrix,triu
 
 from lar2psm import *
@@ -120,59 +120,54 @@ def zeroChain(cells):
    pass
 
 def totalChain(cells):
-   return csrCreate([[0] for cell in cells])  # ????  zero ??
+   return csrCreate([[0] for cell in cells])
 
 def boundaryCells(cells,facets):
-   csrBoundaryMat = boundary(cells,facets)
-   csrChain = totalChain(cells)
-   csrBoundaryChain = matrixProduct(csrBoundaryMat, csrChain)
-   for k,value in enumerate(csrBoundaryChain.data):
-      if value % 2 == 0: csrBoundaryChain.data[k] = 0
-   boundaryCells = [k for k,val in enumerate(csrBoundaryChain.data.tolist()) if val == 1]
-   return boundaryCells
+    csrBoundaryMat = boundary(cells,facets)
+    csrChain = totalChain(cells)
+    csrBoundaryChain = matrixProduct(csrBoundaryMat, csrChain)
+    for k,value in enumerate(csrBoundaryChain.data):
+        if value % 2 == 0: csrBoundaryChain.data[k] = 0
+    boundaryCells = [k for k,val in enumerate(csrBoundaryChain.data.tolist()) if val == 1]
+    return boundaryCells
 
-def signedSimplicialBoundary (CV,FV):
+def signedBoundary (V,CV,FV):
    # compute the set of pairs of indices to [boundary face,incident coface]
    coo = boundary(CV,FV).tocoo()
    pairs = [[coo.row[k],coo.col[k]] for k,val in enumerate(coo.data) if val != 0]
-
+   
    # compute the [face, coface] pair as vertex lists
-   vertLists = [[FV[f], CV[c]] for f,c in pairs]
-
-   # compute the local (interior to the coface) indices of missing vertices 
-   def missingVert(face,coface): return list(set(coface).difference(face))[0]
-   missingVertIndices = [c.index(missingVert(f,c)) for f,c in vertLists]
-
+   vertLists = [[FV[pair[0]], CV[pair[1]]]for pair in pairs]
+   
+   # compute two n-cells to compare for sign
+   cellPairs = [ [list(set(coface).difference(face))+face,coface] 
+               for face,coface in vertLists]
+   
+   # compute the local indices of missing boundary cofaces
+   missingVertIndices = [ coface.index(list(set(coface).difference(face))[0]) 
+                     for face,coface in vertLists]
+   
+   # compute the point matrices to compare for sign
+   pointArrays = [ [[V[k]+[1.0] for k in facetCell], [V[k]+[1.0] for k in cofaceCell]] 
+               for facetCell,cofaceCell in cellPairs]
+   
    # signed incidence coefficients
+   cofaceMats = TRANS(pointArrays)[1]
+   cofaceSigns = AA(SIGN)(AA(np.linalg.det)(cofaceMats))
    faceSigns = AA(C(POWER)(-1))(missingVertIndices)
-
+   signPairProd = AA(PROD)(TRANS([cofaceSigns,faceSigns]))
+   
    # signed boundary matrix
-   csrSignedBoundaryMat = csr_matrix( (faceSigns, TRANS(pairs)) )
+   csrSignedBoundaryMat = csr_matrix( (signPairProd,TRANS(pairs)) )
    return csrSignedBoundaryMat
 
-def swap(mylist): return [mylist[1]]+[mylist[0]]+mylist[2:]
-
 def signedBoundaryCells(verts,cells,facets):
-   csrSignedBoundaryMat = signedSimplicialBoundary(cells,facets)
-
+   csrBoundaryMat = signedBoundary(verts,cells,facets)
    csrTotalChain = totalChain(cells)
-   csrBoundaryChain = matrixProduct(csrSignedBoundaryMat, csrTotalChain)
-   cooCells = csrBoundaryChain.tocoo()
-   
-   boundaryCells = []
-   for k,v in enumerate(cooCells.data):
-      if abs(v) == 1:
-         boundaryCells += [int(cooCells.row[k] * cooCells.data[k])]
-         
-   boundaryCocells = []
-   for k,v in enumerate(boundaryCells):
-      boundaryCocells += list(csrSignedBoundaryMat[abs(v)].tocoo().col)
-      
-   boundaryCofaceMats = [[verts[v]+[1] for v in cells[c]] for c in boundaryCocells]
-   boundaryCofaceSigns = AA(SIGN)(AA(np.linalg.det)(boundaryCofaceMats))
-   orientedBoundaryCells = list(array(boundaryCells)*array(boundaryCofaceSigns))
-   
-   return orientedBoundaryCells
+   csrBoundaryChain = matrixProduct(csrBoundaryMat, csrTotalChain)
+   coo = csrBoundaryChain.tocoo()
+   boundaryCells = list(coo.row * coo.data)
+   return AA(int)(boundaryCells)
 def pivotSimplices(V,CV,d=3):
    simplices = []
    for cell in CV:
@@ -230,13 +225,12 @@ def setup(model,dim):
     csrAdjSquareMat = csrPredFilter(csrAdjSquareMat, GE(dim)) # ? HOWTODO ?
     return V,cells,csr,csrAdjSquareMat
 
-def larFacets(model,dim=3,emptyCellNumber=0):
+def larFacets(model,dim=3):
     """
         Estraction of (d-1)-cellFacets from "model" := (V,d-cells)
         Return (V, (d-1)-cellFacets)
       """
     V,cells,csr,csrAdjSquareMat = setup(model,dim)
-    solidCellNumber = len(cells) - emptyCellNumber
     cellFacets = []
     # for each input cell i
     for i in range(len(cells)):
@@ -244,94 +238,13 @@ def larFacets(model,dim=3,emptyCellNumber=0):
         cell1 = csr[i].tocoo().col
         pairs = zip(adjCells.col,adjCells.data)
         for j,v in pairs:
-            if (i<j) and (i<solidCellNumber):
+            if (i<j):
                 cell2 = csr[j].tocoo().col
                 cell = list(set(cell1).intersection(cell2))
                 cellFacets.append(sorted(cell))
     # sort and remove duplicates
     cellFacets = sorted(AA(list)(set(AA(tuple)(cellFacets))))
     return V,cellFacets
-
-""" Some incidence operators """
-def larIncidence(cells,facets):
-   csrCellFacet = csrCellFaceIncidence(cells,facets)
-   cooCellFacet = csrCellFacet.tocoo()
-   larCellFacet = [[] for cell in range(len(cells))]
-   for i,j,val in zip(cooCellFacet.row,cooCellFacet.col,cooCellFacet.data):
-      if val == 1: larCellFacet[i] += [j]
-   return larCellFacet
-
-""" Cell-Face incidence operator """
-def csrCellFaceIncidence(CV,FV):
-   return boundary(FV,CV)
-
-def larCellFace(CV,FV):
-   return larIncidence(CV,FV)
-
-""" Cell-Edge incidence operator """
-def csrCellEdgeIncidence(CV,EV):
-    return boundary(EV,CV)
-
-def larCellEdge(CV,EV):
-   return larIncidence(CV,EV)
-
-""" Face-Edge incidence operator """
-def csrFaceEdgeIncidence(FV,EV):
-   return boundary(EV,FV)
-
-def larFaceEdge(FV,EV):
-   return larIncidence(FV,EV)
-
-
-""" Visualization of cell indices """
-from sysml import *
-def modelIndexing(shape):
-   V, bases = larCuboids(shape,True)
-   # bases = [[cell for cell in cellComplex if len(cell)==2**k] for k in range(4)]
-   color = [YELLOW,CYAN,GREEN,WHITE]
-   nums = AA(range)(AA(len)(bases))
-   hpcs = []
-   for k in range(4):
-      hpcs += [SKEL_1(STRUCT(MKPOLS((V,bases[k]))))]
-      hpcs += [cellNumbering((V,bases[k]),hpcs[2*k])(nums[k],color[k],0.3+0.2*k)]
-   return STRUCT(hpcs)
-""" Numbered visualization of a LAR model """
-def larModelNumbering(V,bases,submodel,numberScaling=1):
-   color = [YELLOW,CYAN,GREEN,WHITE]
-   nums = AA(range)(AA(len)(bases))
-   hpcs = [submodel]
-   for k in range(len(bases)):
-      hpcs += [cellNumbering((V,bases[k]),submodel)
-               (nums[k],color[k],(0.5+0.1*k)*numberScaling)]
-   return STRUCT(hpcs)
-
-
-""" Drawing of oriented edges (2D) """
-def mkSignedEdges (model,scalingFactor=1):
-   V,EV = model
-   assert len(V[0])==2
-   hpcs = []
-   times = C(SCALARVECTPROD)
-   frac = 0.06*scalingFactor
-   for e0,e1 in EV:
-      v0,v1 = V[e0], V[e1]
-      vx,vy = DIFF([ v1, v0 ])
-      nx,ny = [-vy, vx]
-      v2 = SUM([ v0, times(0.66)([vx,vy]) ])
-      v3 = SUM([ v0, times(0.6-frac)([vx,vy]), times(frac)([nx,ny]) ])
-      v4 = SUM([ v0, times(0.6-frac)([vx,vy]), times(-frac)([nx,ny]) ])
-      verts,cells = [v0,v1,v2,v3,v4],[[1,2],[3,4],[3,5]]
-      hpcs += [MKPOL([verts,cells,None])]
-   hpc = STRUCT(hpcs)
-   return hpc
-
-""" Incidence chain computation """
-def incidenceChain(bases):
-   print "\n len(bases) = ",len(bases),"\n"
-   pairsOfBases = zip(bases[1:],bases[:-1])
-   relations = [larIncidence(cells,facets) 
-               for cells,facets in pairsOfBases]
-   return REVERSE(relations)
 
 
 if __name__ == "__main__": 
@@ -408,8 +321,8 @@ if __name__ == "__main__":
    print "\nboundaryCells_2 =\n", boundaryCells_2
    print "\nboundaryCells_1 =\n", boundaryCells_1
    
-   boundaryModel = (V,[FV[k] for k in boundaryCells_2])
-   VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(boundaryModel)))
+   boundary = (V,[FV[k] for k in boundaryCells_2])
+   VIEW(EXPLODE(1.5,1.5,1.5)(MKPOLS(boundary)))
    
    print "\n>>> larCellAdjacencies"
    adj_2_cells = larCellAdjacencies(csrFV)

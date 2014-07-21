@@ -509,19 +509,19 @@ figura = STRUCT([COLOR([0,1,7])(figura),griglieA, griglieB, ritocchi, COLOR([0,1
 
 #Colonne
 
-# colonna = larRod([0.5,45.])([32,1])
-# colonna = STRUCT(MKPOLS(colonna))
+colonna = larRod([0.5,45.])([32,1])
+colonna = STRUCT(MKPOLS(colonna))
 
-# traslaColonna = T([1,2]) ([2,6])
-# colonnaTraslata = STRUCT([traslaColonna,colonna])
-# traslaColonne = T(2) (4.5)
-# colonneTraslate = STRUCT(NN(2)([traslaColonne,colonnaTraslata]))
-# colonne = STRUCT([colonnaTraslata,colonneTraslate])
-# traslaColonne = T(1) (10)
-# colonneTraslate = STRUCT(NN(2)([traslaColonne,colonne]))
-# colonne = STRUCT([colonne,colonneTraslate])
+traslaColonna = T([1,2]) ([2,6])
+colonnaTraslata = STRUCT([traslaColonna,colonna])
+traslaColonne = T(2) (4.5)
+colonneTraslate = STRUCT(NN(2)([traslaColonne,colonnaTraslata]))
+colonne = STRUCT([colonnaTraslata,colonneTraslate])
+traslaColonne = T(1) (10)
+colonneTraslate = STRUCT(NN(2)([traslaColonne,colonne]))
+colonne = STRUCT([colonne,colonneTraslate])
 
-# figura = STRUCT([figura,colonne])
+figura = STRUCT([figura,colonne])
 
 
 #***********************************************************************************************************************************
@@ -558,14 +558,14 @@ def RGB(values):
                          values[2]/255.0,
                          1.0])
 
-#Palazzi Vicini
+# Palazzi Vicini
 
-# palazzoA = CUBOID([10,10,38])
-# toro = checkModel(larTorus([1,5])())
-# toro = STRUCT(MKPOLS(toro))
-# traslazioneToro = T([1,2,3]) ([5,5,39])
-# toro = STRUCT([traslazioneToro,toro])
-# palazzoA = STRUCT([palazzoA,toro])
+palazzoA = CUBOID([10,10,38])
+toro = checkModel(larTorus([1,5])())
+toro = STRUCT(MKPOLS(toro))
+traslazioneToro = T([1,2,3]) ([5,5,39])
+toro = STRUCT([traslazioneToro,toro])
+palazzoA = STRUCT([palazzoA,toro])
 
 traslaPalazzo = T(2) (-20)
 palazzoA = STRUCT([traslaPalazzo,palazzoA])
@@ -600,42 +600,42 @@ def larPizza(params):
         return V,[range(len(V))]
     return larPizza0
 
-# tronco = larRod([0.2,2.5])([32,1])
-# tronco = STRUCT(MKPOLS(tronco))
-# tronco = COLOR([0.8,0.4,0.3]) (tronco)
+tronco = larRod([0.2,2.5])([32,1])
+tronco = STRUCT(MKPOLS(tronco))
+tronco = COLOR([0.8,0.4,0.3]) (tronco)
 
-# baseChioma = larPizza([0.3,1])([8,48])
-# baseChioma = STRUCT(MKPOLS(baseChioma))
-# traslazioneChioma = T(3) (2.5)
-# baseChioma = STRUCT([traslazioneChioma,baseChioma])
-# cima = [0,0,8]
-# chiomaAbete = JOIN([baseChioma,MK(cima)])
-# chiomaAbete = COLOR(GREEN) (chiomaAbete)
-# abete = STRUCT([tronco,chiomaAbete])
+baseChioma = larPizza([0.3,1])([8,48])
+baseChioma = STRUCT(MKPOLS(baseChioma))
+traslazioneChioma = T(3) (2.5)
+baseChioma = STRUCT([traslazioneChioma,baseChioma])
+cima = [0,0,8]
+chiomaAbete = JOIN([baseChioma,MK(cima)])
+chiomaAbete = COLOR(GREEN) (chiomaAbete)
+abete = STRUCT([tronco,chiomaAbete])
 
-# chiomaTonda = checkModel(larSphere(2)())
-# chiomaTonda = STRUCT(MKPOLS(chiomaTonda))
-# traslazioneChioma = T(3) (4)
-# chiomaTonda = STRUCT([traslazioneChioma,chiomaTonda])
-# chiomaTonda = COLOR(GREEN) (chiomaTonda)
-# alberello = STRUCT([tronco,chiomaTonda])
-# traslazioneAlbero = T(1) (5)
-# alberello = STRUCT([traslazioneAlbero,alberello])
+chiomaTonda = checkModel(larSphere(2)())
+chiomaTonda = STRUCT(MKPOLS(chiomaTonda))
+traslazioneChioma = T(3) (4)
+chiomaTonda = STRUCT([traslazioneChioma,chiomaTonda])
+chiomaTonda = COLOR(GREEN) (chiomaTonda)
+alberello = STRUCT([tronco,chiomaTonda])
+traslazioneAlbero = T(1) (5)
+alberello = STRUCT([traslazioneAlbero,alberello])
 
-# alberi = STRUCT([alberello,abete])
+alberi = STRUCT([alberello,abete])
 
-# traslazioneAlberi = T(1) (10)
-# parco = STRUCT(NN(5)([traslazioneAlberi,alberi]))
-# parco = STRUCT([alberi,parco])
+traslazioneAlberi = T(1) (10)
+parco = STRUCT(NN(5)([traslazioneAlberi,alberi]))
+parco = STRUCT([alberi,parco])
 
-# traslazioneAlberi = T(2) (5)
-# parcoTraslato = STRUCT(NN(9)([traslazioneAlberi,parco]))
-# parco = STRUCT([parcoTraslato,parco])
+traslazioneAlberi = T(2) (5)
+parcoTraslato = STRUCT(NN(9)([traslazioneAlberi,parco]))
+parco = STRUCT([parcoTraslato,parco])
 
-# traslazioneParco = T(1) (-70)
-# parco = STRUCT([traslazioneParco, parco])
+traslazioneParco = T(1) (-70)
+parco = STRUCT([traslazioneParco, parco])
 
-# figura = STRUCT([figura,parco])
+figura = STRUCT([figura,parco])
 
 #Strada
 
